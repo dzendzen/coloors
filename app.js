@@ -16,13 +16,15 @@ colorDivs.forEach((div, index) => {
   });
 });
 currentHexes.forEach((hex) => {
-  hex.addEventListener("click", () => {
+  hex.addEventListener("click", (e) => {
     copyToClipboard(hex);
+    console.log(e, hex.value);
   });
 });
 
 popup.addEventListener("transitionend", () => {
   const popupBox = popup.children[0];
+  console.log(popupBox);
   popup.classList.remove(".active");
   popupBox.classList.remove(".active");
 });
@@ -157,13 +159,14 @@ function copyToClipboard(hex) {
   const el = document.createElement("textarea");
   el.value = hex.innerText;
   document.body.appendChild(el);
+  console.log(el);
 
   el.select();
   document.execCommand("copy");
   document.body.removeChild(el);
   //popup animation
   const popupBox = popup.children[0];
-  console.log(popupBox);
+
   popup.classList.add(".active");
   popupBox.classList.add(".active");
   console.log(popup);
