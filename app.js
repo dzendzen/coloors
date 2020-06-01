@@ -3,8 +3,12 @@ const colorDivs = document.querySelectorAll(".color");
 const generateBtn = document.querySelector(".generate");
 const sliders = document.querySelectorAll('input[type="range"]');
 const currentHexes = document.querySelectorAll(".color h2");
-let initialColors;
 const popup = document.querySelector(".copy-container");
+const adjustBtn = document.querySelectorAll(".adjust");
+const lockbtn = document.querySelectorAll(".lock");
+const closeAdjustments = document.querySelectorAll(".close-adjustment");
+const sliderContainers = document.querySelectorAll(".sliders");
+let initialColors;
 
 //***add event listeners
 sliders.forEach((slider) => {
@@ -15,18 +19,29 @@ colorDivs.forEach((div, index) => {
     updateTextUI(index);
   });
 });
+
 currentHexes.forEach((hex) => {
-  hex.addEventListener("click", (e) => {
+  hex.addEventListener("click", () => {
     copyToClipboard(hex);
-    console.log(e, hex.value);
   });
 });
 
 popup.addEventListener("transitionend", () => {
   const popupBox = popup.children[0];
-  console.log(popupBox);
   popup.classList.remove(".active");
   popupBox.classList.remove(".active");
+});
+
+adjustBtn.forEach((button, index) => {
+  button.addEventListener("click", () => {
+    openAdjustmentPanel(index);
+  });
+});
+
+closeAdjustments.forEach((button, index) => {
+  button.addEventListener("click", () => {
+    closeAdjustmentPanel(index);
+  });
 });
 
 //****functions****
@@ -158,17 +173,25 @@ function resetInputs() {
 function copyToClipboard(hex) {
   const el = document.createElement("textarea");
   el.value = hex.innerText;
+  console.log(hex.innerText);
   document.body.appendChild(el);
-  console.log(el);
 
   el.select();
   document.execCommand("copy");
-  document.body.removeChild(el);
+
   //popup animation
   const popupBox = popup.children[0];
-
   popup.classList.add(".active");
   popupBox.classList.add(".active");
-  console.log(popup);
+
+  document.body.removeChild(el);
 }
+
+function openAdjustmentPanel(index) {
+  sliderContainers[index].classList.toggle("active");
+}
+function closeAdjustmentPanel(index) {
+  sliderContainers[index].classList.remove("active");
+}
+
 randomColors();
