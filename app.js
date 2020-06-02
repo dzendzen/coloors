@@ -5,12 +5,16 @@ const sliders = document.querySelectorAll('input[type="range"]');
 const currentHexes = document.querySelectorAll(".color h2");
 const popup = document.querySelector(".copy-container");
 const adjustBtn = document.querySelectorAll(".adjust");
-const lockbtn = document.querySelectorAll(".lock");
+const lockBtn = document.querySelectorAll(".lock");
 const closeAdjustments = document.querySelectorAll(".close-adjustment");
 const sliderContainers = document.querySelectorAll(".sliders");
 let initialColors;
 
+//set local storage variables
+let savedPalettes = [];
+
 //***add event listeners
+generateBtn.addEventListener("click", randomColors);
 sliders.forEach((slider) => {
   slider.addEventListener("input", hslControls);
 });
@@ -43,6 +47,16 @@ closeAdjustments.forEach((button, index) => {
     closeAdjustmentPanel(index);
   });
 });
+lockBtn.forEach((button, index) => {
+  button.addEventListener("click", () => {
+    lockColor(index);
+  });
+});
+function lockColor(index) {
+  colorDivs[index].classList.toggle("locked");
+  lockBtn[index].children[0].classList.toggle("fa-lock-open");
+  lockBtn[index].children[0].classList.toggle("fa-lock");
+}
 
 //****functions****
 //color generator
@@ -59,8 +73,13 @@ function randomColors() {
     const hexText = div.children[0];
     const randomColor = generateHex();
     //add it to the array
-    initialColors.push(chroma(randomColor).hex());
 
+    if (div.classList.contains("locked")) {
+      initialColors.push(hexText.innerText);
+      return;
+    } else {
+      initialColors.push(chroma(randomColor).hex());
+    }
     //add color to background
     div.style.backgroundColor = randomColor;
     hexText.innerText = randomColor;
@@ -78,6 +97,11 @@ function randomColors() {
   });
   //reset inputs
   resetInputs();
+  //check for contrast on btns
+  adjustBtn.forEach((button, index) => {
+    checkTextContrast(initialColors[index], button);
+    checkTextContrast(initialColors[index], lockBtn[index]);
+  });
 }
 
 //check color contrast so it adapts to bgd color
@@ -183,7 +207,6 @@ function copyToClipboard(hex) {
   const popupBox = popup.children[0];
   popup.classList.add(".active");
   popupBox.classList.add(".active");
-
   document.body.removeChild(el);
 }
 
@@ -194,4 +217,55 @@ function closeAdjustmentPanel(index) {
   sliderContainers[index].classList.remove("active");
 }
 
+//implement save to palette and local storage...
+const saveBtn = document.querySelector(".save");
+const submitSave = document.querySelector(".submit-save");
+const closeSave = document.querySelector(".close-save");
+const saveContainer = document.querySelector(".save-container");
+const saveInput = document.querySelector(".save-container input");
+//event listeners
+saveBtn.addEventListener("click", openPalette);
+closeSave.addEventListener("click", closePalette);
+submitSave.addEventListener("click", savePalette);
+
+function openPalette(e) {
+  const popup = saveContainer.children[0];
+
+  saveContainer.classList.add("active");
+  popup.classList.add("active");
+}
+function closePalette(e) {
+  const popup = saveContainer.children[0];
+
+  saveContainer.classList.remove("active");
+  popup.classList.remove("active");
+}
+function savePalette(e) {
+  saveContainer.classList.remove("active");
+  popup.classList.remove("active");
+  const name = saveInput.value;
+  const colors = [];
+  currentHexes.forEach((hex) => {
+    colors.push(hex.innerText);
+  });
+  //generate object
+  let paletteNb = savedPalettes.length;
+  const paletteObj = { name, colors, nb: paletteNb };
+  savedPalettes.push(paletteObj);
+  //console.log(savedPalettes);
+  //save to local storage
+  saveToLocal(paletteObj);
+  saveInput.value = ""; //reset input to void
+}
+
+function saveToLocal(paletteObj) {
+  let localPalettes;
+  if (localStorage.getItem("palettes") === null) {
+    localPalettes = [];
+  } else {
+    localPalettes = JSON.parse(localStorage.getItem("palettes"));
+  }
+  localPalettes.push(paletteObj);
+  localStorage.setItem("palettes", JSON.stringify(localPalettes));
+}
 randomColors();
